@@ -1,0 +1,20 @@
+# Datasets audio (trop volumineux pour GitHub)
+Donnee/
+*.wav
+*.mp3
+*.m4a
+*.flac
+
+# Archives
+*.zip
+*.tar.gz
+
+# Environnements virtuels
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Fichiers système
+.DS_Store
+*.swp

@@ -1,0 +1,107 @@
+================================================================
+ARCHITECTURE DU MODÈLE — RECONNAISSANCE DU LOCUTEUR
+================================================================
+
+TYPE DE RÉSEAU : MLP (Multi-Layer Perceptron)
+CONTRAINTE : Aucun CNN, RNN, LSTM, Transformer
+COUCHE DE SORTIE : Softmax
+
+================================================================
+COUCHES DU RÉSEAU
+================================================================
+
+[INPUT]
+  Forme : (40,)
+  Rôle  : Vecteur de 40 coefficients MFCC
+          (moyenne temporelle)
+
+[COUCHE CACHÉE 1]
+  Type      : Dense
+  Neurones  : 512
+  Activation: ReLU
+
+[DROPOUT 1]
+  Taux : 0.3 (30% des neurones désactivés aléatoirement)
+
+[COUCHE CACHÉE 2]
+  Type      : Dense
+  Neurones  : 256
+  Activation: ReLU
+
+[DROPOUT 2]
+  Taux : 0.3
+
+[COUCHE CACHÉE 3]
+  Type      : Dense
+  Neurones  : 128
+  Activation: ReLU
+
+[COUCHE DE SORTIE]
+  Type      : Dense
+  Neurones  : 6
+  Activation: Softmax
+  Rôle      : Probabilités pour les 6 classes
+
+================================================================
+RÉSUMÉ
+================================================================
+
+  Couches Dense (avec neurones)      : 4
+  Couches Dropout                    : 2
+  Couches totales (avec Input)       : 6
+
+  Neurones totaux : 512 + 256 + 128 + 6 = 902
+
+  Paramètres entraînables :
+    Dense(512) : (40 × 512) + 512   =  20 992
+    Dense(256) : (512 × 256) + 256  = 131 328
+    Dense(128) : (256 × 128) + 128  =  32 896
+    Dense(6)   : (128 × 6) + 6      =     774
+    ----------------------------------------
+    TOTAL                          = 185 990 paramètres
+
+  Taille du modèle : ~2 Mo
+
+================================================================
+COMPILATION
+================================================================
+
+  Optimizer : Adam
+  Loss      : sparse_categorical_crossentropy
+  Metrics   : accuracy
+  Epochs    : 100
+  Batch size: 32
+
+  Callbacks :
+    - ModelCheckpoint (save_best_only, monitor=accuracy)
+    - EarlyStopping (patience=15, restore_best_weights=True)
+
+================================================================
+ENTRÉE / SORTIE
+================================================================
+
+  ENTRÉE : 40 valeurs MFCC (Mel-Frequency Cepstral Coefficients)
+           Extraites avec librosa
+           n_mfcc=40, sr=16000, duration=3.0s
+           Moyenne temporelle → vecteur (40,)
+           Normalisées avec StandardScaler
+
+  SORTIE : 6 probabilités (softmax)
+    [0] AUTRES
+    [1] Benjamin_Netanyau
+    [2] Jens_Stoltenberg
+    [3] Julia_Gillard
+    [4] Magaret_Tarcher
+    [5] Nelson_Mandela
+
+================================================================
+PERFORMANCES (Test sur 3896 fichiers jamais vus)
+================================================================
+
+  Précision globale    : 99,67%
+  Propriétaire (Mandela): 100%
+  Classe AUTRES        : 98,6%
+  FAR (Faux Accept)    : 0,03%
+  FRR (Faux Reject)    : 0,00%
+
+================================================================
